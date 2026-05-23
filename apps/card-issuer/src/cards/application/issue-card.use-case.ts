@@ -3,7 +3,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardIssueDto } from '@contracts/schemas/card-issue.schema';
 import { CardRequestedData } from '@contracts/events/card-requested.event';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
-import { generateRequestId, nextEventId } from '@common/utils/id.utils';
+import { generateRequestId, getEventId } from '@common/utils/id.utils';
 import { TOPICS } from '@kafka/kafka.topics';
 import {
   CARD_REQUEST_REPOSITORY,
@@ -75,7 +75,7 @@ export class IssueCardUseCase {
     dto: CardIssueDto,
   ) {
     const event: CloudEvent<CardRequestedData> = {
-      id: nextEventId(),
+      id: getEventId(),
       source: requestId,
       type: TOPICS.CARD_REQUESTED,
       data: {

@@ -10,6 +10,6 @@ export function generateCardId(): string {
 
 let eventCounter = 0;
 
-export function nextEventId(): number {
+export function getEventId(): number {
   return ++eventCounter;
 }

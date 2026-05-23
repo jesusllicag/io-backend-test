@@ -5,7 +5,7 @@ import { CardIssuedData } from '@contracts/events/card-issued.event';
 import { CardDlqData } from '@contracts/events/card-dlq.event';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
 import { generateCard, sleep } from '@common/utils/card.utils';
-import { nextEventId } from '@common/utils/id.utils';
+import { getEventId } from '@common/utils/id.utils';
 import { TOPICS } from '@kafka/kafka.topics';
 import {
   CARD_REQUEST_REPOSITORY,
@@ -57,7 +57,7 @@ export class ProcessCardUseCase {
         await this.repository.updateStatus(requestId, 'ISSUED', card);
 
         const event: CloudEvent<CardIssuedData> = {
-          id: nextEventId(),
+          id: getEventId(),
           source: requestId,
           type: TOPICS.CARD_ISSUED,
           data: {
@@ -99,7 +99,7 @@ export class ProcessCardUseCase {
     );
 
     const dlqEvent: CloudEvent<CardDlqData> = {
-      id: nextEventId(),
+      id: getEventId(),
       source: requestId,
       type: TOPICS.CARD_REQUESTED_DLQ,
       data: {

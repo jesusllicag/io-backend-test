@@ -1,18 +1,18 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Consumer, EachMessagePayload, Kafka } from 'kafkajs';
+import { Consumer, EachMessagePayload } from 'kafkajs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { KafkaClientService } from './kafka.client';
 
 export type MessageHandler = (payload: EachMessagePayload) => Promise<void>;
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleDestroy {
-  private consumers: Consumer[] = [];
+  private readonly consumers = new Map<string, Consumer>();
 
   constructor(
     @InjectPinoLogger(KafkaConsumerService.name)
     private readonly logger: PinoLogger,
-    private readonly configService: ConfigService,
+    private readonly client: KafkaClientService,
   ) {}
 
   async subscribe(
@@ -20,15 +20,7 @@ export class KafkaConsumerService implements OnModuleDestroy {
     topics: string[],
     handler: MessageHandler,
   ): Promise<void> {
-    const kafka = new Kafka({
-      clientId: this.configService.get<string>('SERVICE_NAME', 'io-service'),
-      brokers: this.configService
-        .get<string>('KAFKA_BROKER', 'localhost:9092')
-        .split(','),
-    });
-
-    const consumer = kafka.consumer({ groupId });
-
+    const consumer = this.client.kafka.consumer({ groupId });
     await consumer.connect();
 
     for (const topic of topics) {
@@ -37,20 +29,54 @@ export class KafkaConsumerService implements OnModuleDestroy {
 
     await consumer.run({
       eachMessage: async (payload) => {
-        this.logger.info(
-          { topic: payload.topic, offset: payload.message.offset },
-          'Message received',
-        );
-        await handler(payload);
+        try {
+          await this.handleMessage(payload, handler);
+        } catch (error: unknown) {
+          this.handleErrorMessage(payload, error);
+          throw error;
+        }
       },
     });
 
-    this.consumers.push(consumer);
+    if (this.consumers.has(groupId)) {
+      throw new Error(`Consumer group ${groupId} already exists`);
+    }
+    this.consumers.set(groupId, consumer);
     this.logger.info({ groupId, topics }, 'Kafka consumer started');
   }
 
   async onModuleDestroy(): Promise<void> {
-    await Promise.all(this.consumers.map((c) => c.disconnect()));
+    await Promise.all(
+      Array.from(this.consumers.values()).map((c) => c.disconnect()),
+    );
     this.logger.info('Kafka consumers disconnected');
+  }
+
+  private async handleMessage(
+    payload: EachMessagePayload,
+    handler: MessageHandler,
+  ): Promise<void> {
+    this.logger.info(
+      {
+        topic: payload.topic,
+        offset: payload.message.offset,
+      },
+      'Message received',
+    );
+    await handler(payload);
+  }
+
+  private handleErrorMessage(
+    payload: EachMessagePayload,
+    error: unknown,
+  ): void {
+    this.logger.error(
+      {
+        error,
+        topic: payload.topic,
+        offset: payload.message.offset,
+      },
+      'Message processing failed',
+    );
   }
 }
