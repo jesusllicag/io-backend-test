@@ -1,35 +1,55 @@
 import { Params } from 'nestjs-pino';
 import { SENSITIVE_FIELDS } from './logger.constants';
+import { Request, Response } from 'express';
+
+let appInitialized = false;
+
+export function setAppInitialized(): void {
+  appInitialized = true;
+}
 
 export function buildLoggerConfig(serviceName: string): Params {
-  const isDev = process.env.NODE_ENV !== 'production';
+  const isNonProd = process.env.NODE_ENV !== 'production';
 
   return {
     pinoHttp: {
       level: process.env.LOG_LEVEL ?? 'info',
-      base: { service: serviceName },
+      base: null,
+      formatters: {
+        level: (label) => ({ level: label.toLocaleUpperCase() }),
+        log: (obj: Record<string, unknown>): Record<string, unknown> => {
+          if (!appInitialized) {
+            const { context: _c, service: _s, ...rest } = obj;
+            void _c;
+            void _s;
+            return rest;
+          }
+          return { service: serviceName, ...obj };
+        },
+      },
+      timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
       redact: {
         paths: [...SENSITIVE_FIELDS],
         censor: '[REDACTED]',
       },
-      transport: isDev
+      transport: isNonProd
         ? {
             target: 'pino-pretty',
             options: {
-              colorize: true,
+              colorize: false,
               singleLine: false,
-              translateTime: 'SYS:standard',
+              translateTime: "SYS:yyyy-mm-dd'T'HH:MM:ss.lo",
               ignore: 'pid,hostname',
             },
           }
         : undefined,
       serializers: {
-        req: (req) => ({
+        req: (req: Request) => ({
           method: req.method,
           url: req.url,
           id: req.id,
         }),
-        res: (res) => ({
+        res: (res: Response) => ({
           statusCode: res.statusCode,
         }),
       },
