@@ -44,14 +44,8 @@ export function buildLoggerConfig(serviceName: string): Params {
           }
         : undefined,
       serializers: {
-        req: (req: Request) => ({
-          method: req.method,
-          url: req.url,
-          id: req.id,
-        }),
-        res: (res: Response) => ({
-          statusCode: res.statusCode,
-        }),
+        req: () => undefined,
+        res: () => undefined,
       },
     },
   };
