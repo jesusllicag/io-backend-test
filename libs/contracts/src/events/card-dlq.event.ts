@@ -5,7 +5,7 @@ export interface CardDlqData {
   requestId: string;
   attempts: number;
   reason: string;
-  error: ErrorDetails;
+  errors: ErrorDetails[];
   originalPayload: CardRequestedData;
   status: 'FAILED';
 }

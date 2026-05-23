@@ -3,7 +3,7 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CardRequestedData } from '@contracts/events/card-requested.event';
 import { CardIssuedData } from '@contracts/events/card-issued.event';
 import { CardDlqData } from '@contracts/events/card-dlq.event';
-import { CloudEvent } from '@contracts/types/cloud-event.types';
+import { CloudEvent, ErrorDetails } from '@contracts/types/cloud-event.types';
 import { generateCard, sleep } from '@common/utils/card.utils';
 import { getEventId } from '@common/utils/id.utils';
 import { TOPICS } from '@kafka/kafka.topics';
@@ -18,7 +18,11 @@ import {
 import { CardIssuanceSimulator } from '../infrastructure/external/card-issuance-simulator';
 
 const MAX_RETRIES = 3;
-const RETRY_DELAYS_MS = [1000, 2000, 4000];
+const BASE_RETRY_DELAY_MS = 1000;
+
+const getRetryDelay = (attempt: number): number => {
+  return BASE_RETRY_DELAY_MS * 2 ** (attempt - 1);
+};
 
 @Injectable()
 export class ProcessCardUseCase {
@@ -41,16 +45,15 @@ export class ProcessCardUseCase {
     );
 
     let lastError: Error | null = null;
+    const errors: Error[] = [];
 
     for (let attempt = 1; attempt <= MAX_RETRIES + 1; attempt++) {
       try {
-        const result = await this.simulator.simulate(forceError);
+        this.logger.info(
+          `Attempt ${attempt} to issue card for request ${requestId}`,
+        );
 
-        if (!result.success) {
-          throw new Error(
-            `External service failed after ${result.durationMs}ms`,
-          );
-        }
+        await this.simulator.eval(forceError);
 
         const card = generateCard();
 
@@ -69,6 +72,10 @@ export class ProcessCardUseCase {
           },
         };
 
+        if (errors.length > 0) {
+          event.data.errors = this.buildIssuranceErrors(errors);
+        }
+
         await this.publisher.publish(TOPICS.CARD_ISSUED, event);
 
         this.logger.info(
@@ -77,14 +84,15 @@ export class ProcessCardUseCase {
         );
 
         return;
-      } catch (error) {
+      } catch (error: unknown) {
         lastError = error instanceof Error ? error : new Error(String(error));
+        errors.push(lastError);
 
         if (attempt <= MAX_RETRIES) {
-          const delayMs = RETRY_DELAYS_MS[attempt - 1];
+          const delayMs = getRetryDelay(attempt);
           this.logger.warn(
             { requestId, attempt, delayMs, error: lastError.message },
-            'Retrying card issuance',
+            `The attempt ${attempt} to issue the card failed, will retry after ${delayMs} ms`,
           );
           await sleep(delayMs);
         }
@@ -106,7 +114,7 @@ export class ProcessCardUseCase {
         requestId,
         attempts: MAX_RETRIES + 1,
         reason: lastError!.message,
-        error: { message: lastError!.message },
+        errors: this.buildIssuranceErrors(errors),
         originalPayload: data,
         status: 'FAILED',
       },
@@ -120,7 +128,14 @@ export class ProcessCardUseCase {
         attempts: MAX_RETRIES + 1,
         error: lastError!.message,
       },
-      'Max retries exceeded — published to DLQ',
+      'Max retries exceeded - published to DLQ',
     );
+  }
+
+  private buildIssuranceErrors(errors: Error[]): ErrorDetails[] {
+    return errors.map((err, index) => ({
+      message: err.message,
+      attempt: index + 1,
+    }));
   }
 }

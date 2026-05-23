@@ -35,5 +35,5 @@ export interface Card {
 
 export interface ErrorDetails {
   message: string;
-  stack?: string;
+  attempt: number;
 }

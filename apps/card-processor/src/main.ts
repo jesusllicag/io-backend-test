@@ -15,4 +15,7 @@ async function bootstrap() {
   setAppInitialized();
 }
 
-bootstrap();
+bootstrap().catch((error) => {
+  console.error('Failed to start card-processor', error);
+  process.exit(1);
+});
