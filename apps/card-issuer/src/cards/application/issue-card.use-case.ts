@@ -32,17 +32,31 @@ export class IssueCardUseCase {
   ) {}
 
   async execute(dto: CardIssueDto): Promise<IssueCardResult> {
+    await this.findExistingRequest(dto);
+
+    const requestId = await this.createCardRequest(dto);
+
+    await this.publishCardRequestedEvent(requestId, dto);
+
+    return this.toResponse(requestId);
+  }
+
+  private async findExistingRequest(dto: CardIssueDto) {
     const existing = await this.repository.findByDocumentNumber(
       dto.customer.documentNumber,
     );
 
     if (existing) {
+      this.logger.error('Customer already has a card request');
       throw new ConflictException(
         `Customer ${dto.customer.documentNumber} already has a card request`,
       );
     }
+  }
 
+  private async createCardRequest(dto: CardIssueDto): Promise<string> {
     const requestId = generateRequestId();
+
     const entity = new CardRequestEntity(
       requestId,
       dto.customer,
@@ -53,6 +67,13 @@ export class IssueCardUseCase {
 
     await this.repository.save(entity);
 
+    return requestId;
+  }
+
+  private async publishCardRequestedEvent(
+    requestId: string,
+    dto: CardIssueDto,
+  ) {
     const event: CloudEvent<CardRequestedData> = {
       id: nextEventId(),
       source: requestId,
@@ -70,7 +91,9 @@ export class IssueCardUseCase {
     await this.publisher.publish(TOPICS.CARD_REQUESTED, event);
 
     this.logger.info({ requestId }, 'Card issue request created');
+  }
 
+  private toResponse(requestId: string): IssueCardResult {
     return { requestId, status: 'PENDING' };
   }
 }

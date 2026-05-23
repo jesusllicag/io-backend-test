@@ -1,13 +1,21 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  ClassProvider,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import Redis from 'ioredis';
 import { Card, CardStatusValue } from '@contracts/types/cloud-event.types';
-import { CardRequestUpdatePort } from '../../domain/card-request.repository.port';
+import {
+  CARD_REQUEST_REPOSITORY,
+  CardRequestUpdatePort,
+} from '../../domain/card-request.repository.port';
 
 const KEY_PREFIX = 'card:request:';
 
 @Injectable()
-export class RedisCardRequestRepository
+class RedisCardRequestRepository
   implements CardRequestUpdatePort, OnModuleInit, OnModuleDestroy
 {
   private client: Redis;
@@ -55,3 +63,8 @@ export class RedisCardRequestRepository
     await this.client.setex(key, ttl > 0 ? ttl : 86400, JSON.stringify(data));
   }
 }
+
+export const RedisRepositoryProvider: ClassProvider = {
+  provide: CARD_REQUEST_REPOSITORY,
+  useClass: RedisCardRequestRepository,
+};

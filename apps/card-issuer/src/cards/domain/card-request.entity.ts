@@ -1,4 +1,9 @@
-import { Card, CardStatusValue, Customer, Product } from '@contracts/types/cloud-event.types';
+import {
+  Card,
+  CardStatusValue,
+  Customer,
+  Product,
+} from '@contracts/types/cloud-event.types';
 
 export class CardRequestEntity {
   constructor(

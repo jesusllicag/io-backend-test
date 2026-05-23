@@ -7,7 +7,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     AppLoggerModule.forService('card-processor'),
     ProcessorModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
   ],
 })
 export class AppModule {}

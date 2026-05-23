@@ -1,4 +1,5 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Consumer, EachMessagePayload, Kafka } from 'kafkajs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
@@ -11,6 +12,7 @@ export class KafkaConsumerService implements OnModuleDestroy {
   constructor(
     @InjectPinoLogger(KafkaConsumerService.name)
     private readonly logger: PinoLogger,
+    private readonly configService: ConfigService,
   ) {}
 
   async subscribe(
@@ -19,8 +21,10 @@ export class KafkaConsumerService implements OnModuleDestroy {
     handler: MessageHandler,
   ): Promise<void> {
     const kafka = new Kafka({
-      clientId: process.env.SERVICE_NAME ?? 'io-service',
-      brokers: (process.env.KAFKA_BROKER ?? 'localhost:9092').split(','),
+      clientId: this.configService.get<string>('SERVICE_NAME', 'io-service'),
+      brokers: this.configService
+        .get<string>('KAFKA_BROKER', 'localhost:9092')
+        .split(','),
     });
 
     const consumer = kafka.consumer({ groupId });

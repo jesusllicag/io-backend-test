@@ -8,9 +8,10 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { Response } from 'express';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
+class LoggingInterceptor implements NestInterceptor {
   constructor(
     @InjectPinoLogger(LoggingInterceptor.name)
     private readonly logger: PinoLogger,
@@ -38,3 +39,8 @@ export class LoggingInterceptor implements NestInterceptor {
     );
   }
 }
+
+export const LoggingInterceptorProvider = {
+  provide: APP_INTERCEPTOR,
+  useClass: LoggingInterceptor,
+};

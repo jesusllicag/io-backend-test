@@ -1,7 +1,15 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  ClassProvider,
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import Redis from 'ioredis';
-import { CardRequestRepositoryPort } from '../../domain/card-request.repository.port';
+import {
+  CARD_REQUEST_REPOSITORY,
+  CardRequestRepositoryPort,
+} from '../../domain/card-request.repository.port';
 import { CardRequestEntity } from '../../domain/card-request.entity';
 import { Customer, Product, Card } from '@contracts/types/cloud-event.types';
 
@@ -10,7 +18,7 @@ const DOC_INDEX_PREFIX = 'card:doc:';
 const TTL_SECONDS = 86400; // 24h
 
 @Injectable()
-export class RedisCardRequestRepository
+class RedisCardRequestRepository
   implements CardRequestRepositoryPort, OnModuleInit, OnModuleDestroy
 {
   private client: Redis;
@@ -50,6 +58,7 @@ export class RedisCardRequestRepository
   async findByDocumentNumber(
     documentNumber: string,
   ): Promise<CardRequestEntity | null> {
+    this.logger.info(`Looking up card by doc. number: ${documentNumber}`);
     const requestId = await this.client.get(DOC_INDEX_PREFIX + documentNumber);
     if (!requestId) return null;
     return this.findByRequestId(requestId);
@@ -71,3 +80,8 @@ export class RedisCardRequestRepository
     return entity;
   }
 }
+
+export const RedisProvider: ClassProvider = {
+  provide: CARD_REQUEST_REPOSITORY,
+  useClass: RedisCardRequestRepository,
+};
