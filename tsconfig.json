@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "resolvePackageJsonExports": true,
-    "esModuleInterop": true,
-    "isolatedModules": true,
+    "module": "commonjs",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -13,13 +9,23 @@
     "target": "ES2023",
     "sourceMap": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "baseUrl": ".",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@contracts": ["libs/contracts/src/index"],
+      "@contracts/*": ["libs/contracts/src/*"],
+      "@common": ["libs/common/src/index"],
+      "@common/*": ["libs/common/src/*"],
+      "@kafka": ["libs/kafka/src/index"],
+      "@kafka/*": ["libs/kafka/src/*"],
+      "@logger": ["libs/logger/src/index"],
+      "@logger/*": ["libs/logger/src/*"]
+    }
   }
 }

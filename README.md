@@ -1,98 +1,154 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# IO Backend — Card Issuance System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Sistema distribuido basado en eventos para la emisión de tarjetas, construido con NestJS monorepo, Kafka y Redis.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Arquitectura
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```text
+Client
+  │
+  ▼
+POST /api/v1/cards/issue       (card-issuer)
+  │  Valida → persiste PENDING → publica evento
+  ▼
+Kafka: io.card.requested.v1
+  │
+  ▼
+card-processor
+  │  Simula servicio externo (200–500 ms, éxito aleatorio)
+  │  Retry: 1 s → 2 s → 4 s (máx 3 reintentos)
+  ├─ éxito → actualiza Redis → publica io.cards.issued.v1
+  └─ fallo → actualiza Redis → publica io.card.requested.v1.dlq
 ```
 
-## Compile and run the project
+## Estructura del monorepo
 
-```bash
-# development
-$ npm run start
+```text
+apps/
+  card-issuer/          # REST API (arquitectura hexagonal)
+  card-processor/       # Consumer Kafka (arquitectura hexagonal)
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+libs/
+  contracts/            # Tipos, schemas Zod, eventos CloudEvents
+  kafka/                # KafkaJS producer y consumer
+  logger/               # Pino centralizado
+  common/               # Utilidades: IDs (node:crypto), generación de tarjeta
 ```
 
-## Run tests
+## Requisitos previos
+
+- Node.js ≥ 20
+- Docker y Docker Compose
+
+## Inicio rápido
+
+### 1. Instalar dependencias
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 2. Levantar infraestructura (Kafka + Redis)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Espera ~20 s a que Kafka esté listo. Puedes verificar:
 
-## Resources
+```bash
+docker compose ps
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 3. Levantar servicios
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+En dos terminales separadas:
 
-## Support
+```bash
+# Terminal 1 — card-issuer (API REST en :3000)
+npm run start:issuer:dev
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Terminal 2 — card-processor (consumer Kafka)
+npm run start:processor:dev
+```
 
-## Stay in touch
+### 4. Probar el endpoint
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+curl -X POST http://localhost:3000/api/v1/cards/issue \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer": {
+      "documentType": "DNI",
+      "documentNumber": "11654321",
+      "fullName": "Jose Perez",
+      "age": 25,
+      "email": "joseperez@example.com"
+    },
+    "product": {
+      "type": "VISA",
+      "currency": "PEN"
+    },
+    "forceError": false
+  }'
+```
 
-## License
+Respuesta exitosa (202 Accepted):
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+{
+  "requestId": "uuid-generado",
+  "status": "PENDING"
+}
+```
+
+### 5. Forzar error (prueba DLQ)
+
+Cambia `"forceError": true` para que el processor falle siempre y publique en el DLQ tras 3 reintentos.
+
+## Build para producción
+
+```bash
+npm run build:issuer
+npm run build:processor
+
+# Ejecutar bundles
+node dist/apps/card-issuer/main.js
+node dist/apps/card-processor/main.js
+```
+
+## Tests
+
+```bash
+npm test
+npm run test:cov
+```
+
+## Variables de entorno
+
+| Variable       | Default                  | Descripción                    |
+|----------------|--------------------------|--------------------------------|
+| `PORT`         | `3000`                   | Puerto del card-issuer         |
+| `KAFKA_BROKER` | `localhost:9092`         | Broker Kafka                   |
+| `REDIS_URL`    | `redis://localhost:6379` | URL de Redis                   |
+| `LOG_LEVEL`    | `info`                   | Nivel de log Pino              |
+| `NODE_ENV`     | `development`            | Entorno (activa pino-pretty)   |
+
+## Tópicos Kafka
+
+| Tópico                        | Descripción                        |
+|-------------------------------|------------------------------------|
+| `io.card.requested.v1`        | Solicitud de emisión (PENDING)     |
+| `io.cards.issued.v1`          | Tarjeta emitida exitosamente       |
+| `io.card.requested.v1.dlq`    | Solicitud fallida (Dead Letter Queue) |
+
+## Decisiones técnicas
+
+- **NestJS monorepo** — permite compartir contratos, logger y kafka config entre servicios sin duplicación.
+- **Arquitectura hexagonal** — dominio agnóstico de infraestructura; puertos (interfaces) y adaptadores (Redis, Kafka).
+- **Redis Repository Pattern** — persistencia con índice por DNI para evitar duplicados de tarjetas por cliente.
+- **Retry exponencial manual** — 1 s, 2 s, 4 s dentro del handler del consumer; evita dependencias externas de retry.
+- **CloudEvents** — estructura de eventos estandarizada con `id` autoincremental por ejecución y `source` = `requestId`.
+- **Zod** — validación manual en `ZodValidationPipe`; no usa los pipes de NestJS.
+- **node:crypto** — `randomUUID()` sin dependencias externas para IDs.
+- **Pino** — logging estructurado JSON con redacción de campos sensibles (`cardNumber`, `cvv`, etc.).

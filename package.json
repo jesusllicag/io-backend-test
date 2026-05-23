@@ -1,22 +1,22 @@
 {
   "name": "io-backend-test",
   "version": "0.0.1",
-  "description": "",
+  "description": "Card issuance system - event-driven architecture",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "build:issuer": "nest build card-issuer",
+    "build:processor": "nest build card-processor",
+    "start:issuer": "nest start card-issuer",
+    "start:processor": "nest start card-processor",
+    "start:issuer:dev": "nest start card-issuer --watch",
+    "start:processor:dev": "nest start card-processor --watch",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
@@ -25,13 +25,14 @@
     "@nestjs/platform-express": "^11.0.1",
     "compression": "^1.8.1",
     "helmet": "^8.2.0",
+    "ioredis": "^5.10.1",
+    "kafkajs": "^2.2.4",
     "nestjs-pino": "^4.6.1",
-    "nestjs-zod": "^5.4.0",
     "pino": "^10.3.1",
     "pino-http": "^11.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "zod": "^4.4.3"
+    "zod": "^3.25.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -66,7 +67,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -74,7 +75,21 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "@contracts/(.*)": "<rootDir>/libs/contracts/src/$1",
+      "@contracts": "<rootDir>/libs/contracts/src/index",
+      "@common/(.*)": "<rootDir>/libs/common/src/$1",
+      "@common": "<rootDir>/libs/common/src/index",
+      "@kafka/(.*)": "<rootDir>/libs/kafka/src/$1",
+      "@kafka": "<rootDir>/libs/kafka/src/index",
+      "@logger/(.*)": "<rootDir>/libs/logger/src/$1",
+      "@logger": "<rootDir>/libs/logger/src/index"
+    }
   }
 }
