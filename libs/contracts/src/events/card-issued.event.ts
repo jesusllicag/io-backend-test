@@ -1,9 +1,4 @@
-import {
-  Card,
-  Customer,
-  ErrorDetails,
-  Product,
-} from '../types/cloud-event.types';
+import { Card, Customer, Product } from '../types/cloud-event.types';
 
 export interface CardIssuedData {
   requestId: string;
@@ -11,5 +6,4 @@ export interface CardIssuedData {
   customer: Customer;
   product: Product;
   status: 'ISSUED';
-  errors?: ErrorDetails[];
 }

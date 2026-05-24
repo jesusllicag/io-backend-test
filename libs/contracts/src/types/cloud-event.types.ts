@@ -3,6 +3,7 @@ export interface CloudEvent<T = unknown> {
   source: string;
   type: string;
   data: T;
+  errors?: ErrorDetails[];
 }
 
 export interface CardStatus {

@@ -3,6 +3,8 @@ import { Producer, ProducerRecord } from 'kafkajs';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
 import { KafkaClientService } from './kafka.client';
+import { KafkaAdminService } from './kafka.admin';
+import { TOPICS } from './kafka.topics';
 
 @Injectable()
 export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
@@ -10,6 +12,7 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly client: KafkaClientService,
+    private readonly admin: KafkaAdminService,
     @InjectPinoLogger(KafkaProducerService.name)
     private readonly logger: PinoLogger,
   ) {
@@ -17,6 +20,7 @@ export class KafkaProducerService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit(): Promise<void> {
+    await this.admin.ensureTopics(Object.values(TOPICS));
     await this.producer.connect();
     this.logger.info('Kafka producer connected');
   }

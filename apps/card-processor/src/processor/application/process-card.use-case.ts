@@ -73,7 +73,7 @@ export class ProcessCardUseCase {
         };
 
         if (errors.length > 0) {
-          event.data.errors = this.buildIssuranceErrors(errors);
+          event.errors = this.buildIssuranceErrors(errors);
         }
 
         await this.publisher.publish(TOPICS.CARD_ISSUED, event);
@@ -114,10 +114,10 @@ export class ProcessCardUseCase {
         requestId,
         attempts: MAX_RETRIES + 1,
         reason: lastError!.message,
-        errors: this.buildIssuranceErrors(errors),
         originalPayload: data,
         status: 'FAILED',
       },
+      errors: this.buildIssuranceErrors(errors),
     };
 
     await this.publisher.publish(TOPICS.CARD_REQUESTED_DLQ, dlqEvent);
