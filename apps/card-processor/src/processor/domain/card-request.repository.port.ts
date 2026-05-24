@@ -9,4 +9,6 @@ export interface CardRequestUpdatePort {
     card?: Card,
     errorMessage?: string,
   ): Promise<void>;
+
+  deleteByRequestId(requestId: string): Promise<void>;
 }

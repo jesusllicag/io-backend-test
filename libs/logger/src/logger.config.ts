@@ -1,6 +1,5 @@
 import { Params } from 'nestjs-pino';
 import { SENSITIVE_FIELDS } from './logger.constants';
-import { Request, Response } from 'express';
 
 let appInitialized = false;
 

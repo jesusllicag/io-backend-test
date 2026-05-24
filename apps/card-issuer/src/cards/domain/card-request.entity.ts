@@ -43,4 +43,8 @@ export class CardRequestEntity {
       updatedAt: this.updatedAt,
     };
   }
+
+  toString(): string {
+    return JSON.stringify(this.toJSON());
+  }
 }
