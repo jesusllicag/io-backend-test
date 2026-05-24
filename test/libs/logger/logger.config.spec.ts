@@ -5,7 +5,7 @@ describe('logger.config', () => {
     beforeEach(() => {
       jest.isolateModules(() => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const mod = require('./logger.config') as typeof import('./logger.config');
+        const mod = require('../../../libs/logger/src/logger.config') as typeof import('../../../libs/logger/src/logger.config');
         buildLoggerConfig = mod.buildLoggerConfig;
       });
     });
@@ -92,7 +92,7 @@ describe('logger.config', () => {
     beforeEach(() => {
       jest.isolateModules(() => {
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const mod = require('./logger.config') as typeof import('./logger.config');
+        const mod = require('../../../libs/logger/src/logger.config') as typeof import('../../../libs/logger/src/logger.config');
         buildLoggerConfig = mod.buildLoggerConfig;
         setAppInitialized = mod.setAppInitialized;
       });

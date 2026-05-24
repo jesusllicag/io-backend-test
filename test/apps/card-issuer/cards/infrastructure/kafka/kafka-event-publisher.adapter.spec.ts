@@ -1,4 +1,4 @@
-import { KafkaEventPublisherProvider } from './kafka-event-publisher.adapter';
+import { KafkaEventPublisherProvider } from '../../../../../../apps/card-issuer/src/cards/infrastructure/kafka/kafka-event-publisher.adapter';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
 
 const mockProducer = {

@@ -3,7 +3,10 @@ jest.mock('node:crypto', () => ({
   randomUUID: jest.fn().mockReturnValue('test-card-uuid'),
 }));
 
-import { generateCard, sleep } from './card.utils';
+import {
+  generateCard,
+  sleep,
+} from '../../../../libs/common/src/utils/card.utils';
 
 describe('card.utils', () => {
   describe('sleep', () => {

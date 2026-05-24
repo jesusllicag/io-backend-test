@@ -1,4 +1,4 @@
-import { CardRequestEntity } from './card-request.entity';
+import { CardRequestEntity } from '../../../../../apps/card-issuer/src/cards/domain/card-request.entity';
 import { Customer, Product, Card } from '@contracts/types/cloud-event.types';
 
 const customer: Customer = {

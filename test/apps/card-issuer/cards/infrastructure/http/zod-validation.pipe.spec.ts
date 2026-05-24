@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { ZodValidationPipe } from './zod-validation.pipe';
+import { ZodValidationPipe } from '../../../../../../apps/card-issuer/src/cards/infrastructure/http/zod-validation.pipe';
 import { CardIssueSchema } from '@contracts/schemas/card-issue.schema';
 
 const validInput = {

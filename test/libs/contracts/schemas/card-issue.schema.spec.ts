@@ -1,4 +1,4 @@
-import { CardIssueSchema } from './card-issue.schema';
+import { CardIssueSchema } from '../../../../libs/contracts/src/schemas/card-issue.schema';
 
 const validPayload = {
   customer: {

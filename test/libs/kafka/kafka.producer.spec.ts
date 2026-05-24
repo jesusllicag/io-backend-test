@@ -1,5 +1,5 @@
-import { KafkaProducerService } from './kafka.producer';
-import { TOPICS } from './kafka.topics';
+import { KafkaProducerService } from '../../../libs/kafka/src/kafka.producer';
+import { TOPICS } from '../../../libs/kafka/src/kafka.topics';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
 
 jest.mock('nestjs-pino', () => ({

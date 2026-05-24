@@ -1,4 +1,4 @@
-import { KafkaClientService } from './kafka.client';
+import { KafkaClientService } from '../../../libs/kafka/src/kafka.client';
 import { Kafka } from 'kafkajs';
 import { ConfigService } from '@nestjs/config';
 

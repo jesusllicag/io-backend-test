@@ -1,4 +1,4 @@
-import { KafkaConsumerService } from './kafka.consumer';
+import { KafkaConsumerService } from '../../../libs/kafka/src/kafka.consumer';
 import { EachMessagePayload } from 'kafkajs';
 
 jest.mock('nestjs-pino', () => ({

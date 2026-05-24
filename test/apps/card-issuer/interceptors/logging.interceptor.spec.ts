@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { of, throwError } from 'rxjs';
-import { LoggingInterceptorProvider } from './logging.interceptor';
+import { LoggingInterceptorProvider } from '../../../../apps/card-issuer/src/interceptors/logging.interceptor';
 
 jest.mock('nestjs-pino', () => ({
   InjectPinoLogger: () => () => {},

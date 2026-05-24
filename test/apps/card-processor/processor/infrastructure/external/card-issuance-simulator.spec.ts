@@ -13,7 +13,7 @@ jest.mock('nestjs-pino', () => ({
 
 import { randomInt } from 'node:crypto';
 import { sleep } from '@common/utils/card.utils';
-import { CardIssuanceSimulator } from './card-issuance-simulator';
+import { CardIssuanceSimulator } from '../../../../../../apps/card-processor/src/processor/infrastructure/external/card-issuance-simulator';
 
 const mockRandomInt = randomInt as jest.MockedFunction<typeof randomInt>;
 const mockSleep = sleep as jest.MockedFunction<typeof sleep>;

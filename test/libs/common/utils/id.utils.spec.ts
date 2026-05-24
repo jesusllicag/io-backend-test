@@ -1,4 +1,4 @@
-import { generateRequestId, generateCardId, getEventId } from './id.utils';
+import { generateRequestId, generateCardId, getEventId } from '../../../../libs/common/src/utils/id.utils';
 
 jest.mock('node:crypto', () => ({
   randomUUID: jest.fn().mockReturnValue('550e8400-e29b-41d4-a716-446655440000'),

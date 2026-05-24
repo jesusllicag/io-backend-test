@@ -1,5 +1,5 @@
-import { CardsController } from './cards.controller';
-import { IssueCardUseCase } from '../../application/issue-card.use-case';
+import { CardsController } from '../../../../../../apps/card-issuer/src/cards/infrastructure/http/cards.controller';
+import { IssueCardUseCase } from '../../../../../../apps/card-issuer/src/cards/application/issue-card.use-case';
 import { CardIssueDto } from '@contracts/schemas/card-issue.schema';
 
 jest.mock('nestjs-pino', () => ({

@@ -28,7 +28,7 @@ const config: Config = {
     },
   },
   testEnvironment: 'node',
-  roots: ['<rootDir>/apps/', '<rootDir>/libs/'],
+  roots: ['<rootDir>/test/'],
   moduleNameMapper: {
     '@contracts/(.*)': '<rootDir>/libs/contracts/src/$1',
     '@contracts': '<rootDir>/libs/contracts/src/index',

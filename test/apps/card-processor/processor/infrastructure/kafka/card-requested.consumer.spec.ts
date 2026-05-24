@@ -1,4 +1,4 @@
-import { CardRequestedConsumer } from './card-requested.consumer';
+import { CardRequestedConsumer } from '../../../../../../apps/card-processor/src/processor/infrastructure/kafka/card-requested.consumer';
 import { TOPICS } from '@kafka/kafka.topics';
 import { CloudEvent } from '@contracts/types/cloud-event.types';
 import { CardRequestedData } from '@contracts/events/card-requested.event';

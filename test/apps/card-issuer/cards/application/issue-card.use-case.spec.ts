@@ -1,6 +1,6 @@
 import { ConflictException } from '@nestjs/common';
-import { IssueCardUseCase } from './issue-card.use-case';
-import { CardRequestEntity } from '../domain/card-request.entity';
+import { IssueCardUseCase } from '../../../../../apps/card-issuer/src/cards/application/issue-card.use-case';
+import { CardRequestEntity } from '../../../../../apps/card-issuer/src/cards/domain/card-request.entity';
 import { CardIssueDto } from '@contracts/schemas/card-issue.schema';
 import { TOPICS } from '@kafka/kafka.topics';
 

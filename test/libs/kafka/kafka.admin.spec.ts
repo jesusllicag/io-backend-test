@@ -1,4 +1,4 @@
-import { KafkaAdminService } from './kafka.admin';
+import { KafkaAdminService } from '../../../libs/kafka/src/kafka.admin';
 
 jest.mock('nestjs-pino', () => ({
   InjectPinoLogger: () => () => {},

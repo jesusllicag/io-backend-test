@@ -1,4 +1,4 @@
-import { ProcessCardUseCase } from './process-card.use-case';
+import { ProcessCardUseCase } from '../../../../../apps/card-processor/src/processor/application/process-card.use-case';
 import { CardRequestedData } from '@contracts/events/card-requested.event';
 import { TOPICS } from '@kafka/kafka.topics';
 import { generateCard, sleep } from '@common/utils/card.utils';

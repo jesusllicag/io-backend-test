@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
-import { RedisProvider } from './redis-card-request.repository';
-import { CardRequestEntity } from '../../domain/card-request.entity';
+import { RedisProvider } from '../../../../../../apps/card-issuer/src/cards/infrastructure/persistence/redis-card-request.repository';
+import { CardRequestEntity } from '../../../../../../apps/card-issuer/src/cards/domain/card-request.entity';
 import { ConfigService } from '@nestjs/config';
 
 jest.mock('ioredis');
