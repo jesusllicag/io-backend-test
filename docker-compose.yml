@@ -1,6 +1,45 @@
-version: '3.8'
-
 services:
+  card-issuer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP: card-issuer
+    ports:
+      - '3000:3000'
+    environment:
+      PORT: 3000
+      SERVICE_NAME: card-issuer
+      KAFKA_BROKER: kafka:29092
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  card-processor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP: card-processor
+    environment:
+      SERVICE_NAME: card-processor
+      KAFKA_BROKER: kafka:29092
+      KAFKAJS_NO_PARTITIONER_WARNING: 1
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: info
+      NODE_ENV: production
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     container_name: io-kafka
@@ -22,7 +61,7 @@ services:
       KAFKA_LOG_DIRS: /var/lib/kafka/data
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
-      - kafka_data:/var/lib/kafka/data
+      - ./docker/volumes/kafka:/var/lib/kafka/data
     healthcheck:
       test: ['CMD', 'kafka-broker-api-versions', '--bootstrap-server', 'localhost:9092']
       interval: 10s
@@ -40,7 +79,7 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
-  
+
   redis:
     image: redis:7.2-alpine
     container_name: io-redis
@@ -48,13 +87,9 @@ services:
       - '6379:6379'
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      - ./docker/volumes/redis:/data
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 5s
       timeout: 3s
       retries: 5
-
-volumes:
-  kafka_data:
-  redis_data:
