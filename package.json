@@ -63,36 +63,5 @@
     "tsconfig-paths": "4.2.0",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.4"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "./coverage",
-    "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/apps/",
-      "<rootDir>/libs/"
-    ],
-    "moduleNameMapper": {
-      "@contracts/(.*)": "<rootDir>/libs/contracts/src/$1",
-      "@contracts": "<rootDir>/libs/contracts/src/index",
-      "@common/(.*)": "<rootDir>/libs/common/src/$1",
-      "@common": "<rootDir>/libs/common/src/index",
-      "@kafka/(.*)": "<rootDir>/libs/kafka/src/$1",
-      "@kafka": "<rootDir>/libs/kafka/src/index",
-      "@logger/(.*)": "<rootDir>/libs/logger/src/$1",
-      "@logger": "<rootDir>/libs/logger/src/index"
-    }
   }
 }
